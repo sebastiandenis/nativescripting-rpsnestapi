@@ -1,17 +1,118 @@
-import { Injectable } from '@nestjs/common';
-import { IMessageObject } from './models/domain/message-object.model';
+import { Injectable } from "@nestjs/common";
+import { IMessageObject } from "./shared/models/domain/message-object.model";
+import { PtUserWithAuth } from "./shared/models";
+import { PtItem } from "./shared/models/domain";
+import * as mockgen from "./data/mock-data-generator";
 
 @Injectable()
 export class AppService {
+  usersPerPage = 20;
+  generatedPtUsers: PtUserWithAuth[];
+  generatedPtItems: PtItem[];
+  currentPtUsers: PtUserWithAuth[];
+  currentPtItems: PtItem[];
+  constructor() {
+    this.generatedPtUsers = mockgen.generateUsers();
+    this.generatedPtItems = mockgen.generatePTItems(this.generatedPtUsers);
+    this.currentPtUsers = this.generatedPtUsers.slice(0);
+    this.currentPtItems = this.generatedPtItems.slice(0);
+  }
+
+  getUsers(): PtUserWithAuth[] {
+    return this.currentPtUsers;
+  }
+
+  getBacklog(): PtItem[] {
+    return this.currentPtItems;
+  }
+
+  getMyItems(userId: number): PtItem[] {
+    let found = false;
+    if (this.currentPtUsers.findIndex(u => u.id === userId) >= 0) {
+      found = true;
+    }
+
+    const filteredItems = this.currentPtItems.filter(
+      i => i.assignee.id === userId && i.dateDeleted === undefined,
+    );
+    if (!found) {
+      return undefined;
+    } else {
+      return filteredItems;
+    }
+  }
+
+  getItem(itemId: number): PtItem {
+    const foundItem = this.currentPtItems.find(
+      i => i.id === itemId && i.dateDeleted === undefined,
+    );
+    let found = false;
+    if (foundItem) {
+      found = true;
+    }
+
+    if (!found) {
+      return undefined;
+    } else {
+      return foundItem;
+    }
+  }
+
+  getPhoto(userId: number): string {
+    const user = this.currentPtUsers.find(
+      u => u.id === userId && u.dateDeleted === undefined,
+    );
+
+    let found = false;
+    if (user) {
+      found = true;
+    }
+
+    if (!found) {
+      return undefined;
+    } else {
+      return user.avatar;
+    }
+  }
+
+  getOpenItems(): PtItem[] {
+    const filteredItems = this.currentPtItems.filter(
+      (i: PtItem) =>
+        (i.status === "Open" || i.status === "ReOpened") &&
+        i.dateDeleted === undefined,
+    );
+    return filteredItems;
+  }
+
+  getClosedItems(): PtItem[] {
+    const filteredItems = this.currentPtItems.filter(
+      i => i.status === "Closed" && i.dateDeleted === undefined,
+    );
+    return filteredItems;
+  }
+
   getHello(): string {
-    return 'Hello World!';
+    return "Hello World!";
   }
 
   getMessage(): IMessageObject {
     const messageObject: IMessageObject = {
-      message: 'Hi there, welcome to NativeScription!',
+      message: "Hooray! welcome to our api!!",
     };
 
     return messageObject;
+  }
+
+  private paginateArray(array: [], pageSize: number, pageNumber: number) {
+    --pageNumber; // because pages logically start with 1, but technically with 0
+    return array.slice(pageNumber * pageSize, (pageNumber + 1) * pageSize);
+  }
+
+  private getNextIntergerId(arrayWithIdProp: any[]) {
+    const newId =
+      arrayWithIdProp.length > 0
+        ? Math.max(...arrayWithIdProp.map(i => i.id)) + 1
+        : 1;
+    return newId;
   }
 }
