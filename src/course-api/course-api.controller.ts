@@ -3,7 +3,6 @@ import {
   Get,
   HttpException,
   HttpStatus,
-  Query,
   Res,
   Param,
 } from "@nestjs/common";
@@ -11,28 +10,29 @@ import { AppService } from "src/app.service";
 import { IMessageObject } from "src/shared/models/domain/message-object.model";
 import { PtUserWithAuth } from "src/shared/models";
 import { PtItem } from "src/shared/models/domain";
+import { of, Observable } from "rxjs";
 
 @Controller("api")
 export class CourseApiController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getMessage(): IMessageObject {
-    return this.appService.getMessage();
+  getMessage(): Observable<IMessageObject> {
+    return of(this.appService.getMessage());
   }
 
   @Get("/users")
-  getUsers(): PtUserWithAuth[] {
-    return this.appService.getUsers();
+  getUsers(): Observable<PtUserWithAuth[]> {
+    return of(this.appService.getUsers());
   }
 
   @Get("/backlog")
-  getBacklog(): PtItem[] {
-    return this.appService.generatedPtItems;
+  getBacklog(): Observable<PtItem[]> {
+    return of(this.appService.generatedPtItems);
   }
 
   @Get("/myItems/:userId")
-  getMyItems(@Param("userId") userId?: string): PtItem[] {
+  getMyItems(@Param("userId") userId?: string): Observable<PtItem[]> {
     let id: number;
     if (userId) {
       id = parseInt(userId, 10);
@@ -42,11 +42,11 @@ export class CourseApiController {
       throw new HttpException("Items not found", HttpStatus.NOT_FOUND);
       items = [];
     }
-    return items;
+    return of(items);
   }
 
   @Get("/item/:id")
-  getItem(@Param("id") id?: string): PtItem {
+  getItem(@Param("id") id?: string): Observable<PtItem> {
     let itemId: number;
     if (id) {
       itemId = parseInt(id, 10);
@@ -56,11 +56,11 @@ export class CourseApiController {
       throw new HttpException("Item not found", HttpStatus.NOT_FOUND);
       item = null;
     }
-    return item;
+    return of(item);
   }
 
   @Get("/photo/:id")
-  getPhoto(@Res() res, @Param("id") id?: string): PtItem {
+  getPhoto(@Res() res, @Param("id") id?: string): Observable<PtItem> {
     let userId: number;
     if (id) {
       userId = parseInt(id, 10);
@@ -70,16 +70,16 @@ export class CourseApiController {
       throw new HttpException("Photo not found", HttpStatus.NOT_FOUND);
       photo = null;
     }
-    return res.sendFile(photo, { root: "src" });
+    return of(res.sendFile(photo, { root: "src" }));
   }
 
   @Get("/openItems")
-  getOpenItems(): PtItem[] {
-    return this.appService.getOpenItems();
+  getOpenItems(): Observable<PtItem[]> {
+    return of(this.appService.getOpenItems());
   }
 
   @Get("/closedItems")
-  getClosedItems(): PtItem[] {
-    return this.appService.getClosedItems();
+  getClosedItems(): Observable<PtItem[]> {
+    return of(this.appService.getClosedItems());
   }
 }
