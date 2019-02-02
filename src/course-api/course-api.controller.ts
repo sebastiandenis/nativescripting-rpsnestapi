@@ -5,11 +5,14 @@ import {
   HttpStatus,
   Res,
   Param,
+  Put,
+  Body,
+  Delete,
 } from "@nestjs/common";
 import { AppService } from "src/app.service";
 import { IMessageObject } from "src/shared/models/domain/message-object.model";
 import { PtUserWithAuth } from "src/shared/models";
-import { PtItem } from "src/shared/models/domain";
+import { PtItem, PtUser } from "src/shared/models/domain";
 import { of, Observable } from "rxjs";
 
 @Controller("api")
@@ -81,5 +84,40 @@ export class CourseApiController {
   @Get("/closedItems")
   getClosedItems(): Observable<PtItem[]> {
     return of(this.appService.getClosedItems());
+  }
+
+  @Put("/users/:id")
+  updateUser(
+    @Body() modifiedUser: PtUserWithAuth,
+    @Param("id") id,
+  ): Observable<any> {
+    let userId: number;
+    if (id) {
+      userId = parseInt(id, 10);
+    }
+    const result: any = this.appService.updateUser(modifiedUser, userId);
+    if (!result || (result && !result.found)) {
+      throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+    }
+
+    return of({
+      id: result.id,
+      result: result.result,
+    });
+  }
+
+  @Delete("/users/:id")
+  deleteUser(@Param("id") id: string): Observable<any> {
+    let userId: number;
+    if (id) {
+      userId = parseInt(id, 10);
+    }
+
+    const result: any = this.appService.deleteUser(userId);
+    if (!result || (result && !result.result)) {
+      throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+    }
+
+    return of(result);
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { IMessageObject } from "./shared/models/domain/message-object.model";
 import { PtUserWithAuth } from "./shared/models";
-import { PtItem } from "./shared/models/domain";
+import { PtItem, PtUser } from "./shared/models/domain";
 import * as mockgen from "./data/mock-data-generator";
 
 @Injectable()
@@ -101,6 +101,45 @@ export class AppService {
     };
 
     return messageObject;
+  }
+
+  updateUser(modifiedUser: PtUserWithAuth, userId: number): any {
+    let found = false;
+
+    const newUsers = this.currentPtUsers.map(user => {
+      if (user.id === userId && user.dateDeleted === undefined) {
+        found = true;
+        return modifiedUser;
+      } else {
+        return user;
+      }
+    });
+    this.currentPtUsers = newUsers;
+
+    return {
+      id: userId,
+      result: modifiedUser,
+      found,
+    };
+  }
+
+  deleteUser(userId: number): any {
+    const user = this.currentPtUsers.find(
+      u => u.id === userId && u.dateDeleted === undefined,
+    );
+
+    if (user) {
+      user.dateDeleted = new Date();
+      return {
+        id: userId,
+        result: true,
+      };
+    } else {
+      return {
+        id: userId,
+        result: false,
+      };
+    }
   }
 
   private paginateArray(array: [], pageSize: number, pageNumber: number) {
