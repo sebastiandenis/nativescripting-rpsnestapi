@@ -8,15 +8,18 @@ import {
   Put,
   Body,
   Delete,
+  Post,
 } from "@nestjs/common";
 import { AppService } from "src/app.service";
 import { IMessageObject } from "src/shared/models/domain/message-object.model";
 import { PtUserWithAuth } from "src/shared/models";
-import { PtItem, PtUser } from "src/shared/models/domain";
+import { PtItem, PtUser, PtComment } from "src/shared/models/domain";
 import { of, Observable } from "rxjs";
+import { DtoNewComment } from "src/shared/models/domain/dto-new-comment.model";
 
 @Controller("api")
 export class CourseApiController {
+
   constructor(private readonly appService: AppService) {}
 
   @Get()
@@ -119,5 +122,28 @@ export class CourseApiController {
     }
 
     return of(result);
+  }
+
+  @Post("/comment")
+  createComment(@Body() newCommentDto: DtoNewComment): Observable<PtComment> {
+    let newComment: PtComment;
+    if (
+      newCommentDto &&
+      newCommentDto.itemId &&
+      newCommentDto.comment
+    ) {
+      // tslint:disable-next-line:no-console
+      console.log("newCommentDto");
+      // tslint:disable-next-line:no-console
+      console.dir(newCommentDto);
+      newComment = this.appService.createComment(
+        newCommentDto.itemId,
+        newCommentDto.comment,
+      );
+    }
+    if (!newComment) {
+      throw new HttpException("Comment not created", HttpStatus.NOT_MODIFIED);
+    }
+    return of(newComment);
   }
 }

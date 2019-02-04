@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { IMessageObject } from "./shared/models/domain/message-object.model";
 import { PtUserWithAuth } from "./shared/models";
-import { PtItem, PtUser } from "./shared/models/domain";
+import { PtItem, PtUser, PtComment } from "./shared/models/domain";
 import * as mockgen from "./data/mock-data-generator";
 
 @Injectable()
@@ -139,6 +139,30 @@ export class AppService {
         id: userId,
         result: false,
       };
+    }
+  }
+
+  createComment(itemId: number, comment: PtComment): PtComment {
+    if (itemId && comment) {
+      const foundItem = this.currentPtItems.find(
+        i => i.id === itemId && i.dateDeleted === undefined,
+      );
+      comment.id = this.getNextIntergerId(foundItem.comments);
+      const updatedComments = [comment, ...foundItem.comments];
+      const updateItem = Object.assign({}, foundItem, {
+        comments: updatedComments,
+      });
+      const updatedItems = this.currentPtItems.map(i => {
+        if (i.id === itemId) {
+          return updateItem;
+        } else {
+          return i;
+        }
+      });
+      this.currentPtItems = updatedItems;
+      return comment;
+    } else {
+      return null;
     }
   }
 
