@@ -1,6 +1,6 @@
 import { PtComment } from "./pt-comment.model";
 
-export interface DtoNewComment {
+export interface DtoComment {
   itemId: number;
   comment: PtComment;
 }

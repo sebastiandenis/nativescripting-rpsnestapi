@@ -3,6 +3,7 @@ import { IMessageObject } from "./shared/models/domain/message-object.model";
 import { PtUserWithAuth } from "./shared/models";
 import { PtItem, PtUser, PtComment } from "./shared/models/domain";
 import * as mockgen from "./data/mock-data-generator";
+import { DtoTask } from "./shared/models/domain/dto-task.model";
 
 @Injectable()
 export class AppService {
@@ -164,6 +165,41 @@ export class AppService {
     } else {
       return null;
     }
+  }
+
+  updateTask(taskDto: DtoTask, taskId: number): any {
+    let found = false;
+
+    const foundItem = this.currentPtItems.find(
+      i => i.id === taskDto.itemId && i.dateDeleted === undefined,
+    );
+
+    const updatedTasks = foundItem.tasks.map(t => {
+      if (t.id === taskDto.task.id) {
+        found = true;
+        return taskDto.task;
+      } else {
+        return t;
+      }
+    });
+
+    const updatedItem = Object.assign({}, foundItem, { tasks: updatedTasks });
+
+    const updatedItems = this.currentPtItems.map(i => {
+      if (i.id === taskDto.itemId) {
+        return updatedItem;
+      } else {
+        return i;
+      }
+    });
+
+    this.currentPtItems = updatedItems;
+
+    return {
+      id: taskId,
+      result: taskDto.task,
+      found,
+    };
   }
 
   private paginateArray(array: [], pageSize: number, pageNumber: number) {

@@ -15,11 +15,11 @@ import { IMessageObject } from "src/shared/models/domain/message-object.model";
 import { PtUserWithAuth } from "src/shared/models";
 import { PtItem, PtUser, PtComment } from "src/shared/models/domain";
 import { of, Observable } from "rxjs";
-import { DtoNewComment } from "src/shared/models/domain/dto-new-comment.model";
+import { DtoComment } from "src/shared/models/domain/dto-comment.model";
+import { DtoTask } from "src/shared/models/domain/dto-task.model";
 
 @Controller("api")
 export class CourseApiController {
-
   constructor(private readonly appService: AppService) {}
 
   @Get()
@@ -125,17 +125,9 @@ export class CourseApiController {
   }
 
   @Post("/comment")
-  createComment(@Body() newCommentDto: DtoNewComment): Observable<PtComment> {
+  createComment(@Body() newCommentDto: DtoComment): Observable<PtComment> {
     let newComment: PtComment;
-    if (
-      newCommentDto &&
-      newCommentDto.itemId &&
-      newCommentDto.comment
-    ) {
-      // tslint:disable-next-line:no-console
-      console.log("newCommentDto");
-      // tslint:disable-next-line:no-console
-      console.dir(newCommentDto);
+    if (newCommentDto && newCommentDto.itemId && newCommentDto.comment) {
       newComment = this.appService.createComment(
         newCommentDto.itemId,
         newCommentDto.comment,
@@ -145,5 +137,27 @@ export class CourseApiController {
       throw new HttpException("Comment not created", HttpStatus.NOT_MODIFIED);
     }
     return of(newComment);
+  }
+
+  @Put("/task/:id")
+  updateTask(@Body() taskDto: DtoTask, @Param("id") id): Observable<any> {
+    let taskId: number;
+    let result: any;
+    if (id) {
+      taskId = parseInt(id, 10);
+    }
+
+    if (taskDto && taskDto.itemId && taskDto.task) {
+      result = this.appService.updateTask(taskDto, taskId);
+    }
+
+    if (!result || (result && !result.found)) {
+      throw new HttpException("Task not found", HttpStatus.NOT_FOUND);
+    }
+
+    return of({
+      id: result.id,
+      result: result.result,
+    });
   }
 }
