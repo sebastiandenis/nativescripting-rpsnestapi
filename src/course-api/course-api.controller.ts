@@ -13,7 +13,7 @@ import {
 import { AppService } from "src/app.service";
 import { IMessageObject } from "src/shared/models/domain/message-object.model";
 import { PtUserWithAuth } from "src/shared/models";
-import { PtItem, PtUser, PtComment } from "src/shared/models/domain";
+import { PtItem, PtUser, PtComment, PtTask } from "src/shared/models/domain";
 import { of, Observable } from "rxjs";
 import { DtoComment } from "src/shared/models/domain/dto-comment.model";
 import { DtoTask } from "src/shared/models/domain/dto-task.model";
@@ -159,5 +159,18 @@ export class CourseApiController {
       id: result.id,
       result: result.result,
     });
+  }
+
+  @Post("/task")
+  createTask(@Body() newTaskDto: DtoTask): Observable<PtTask> {
+    let newTask: PtTask;
+
+    if (newTaskDto && newTaskDto.itemId && newTaskDto.task) {
+      newTask = this.appService.createTask(newTaskDto.task, newTaskDto.itemId);
+    } else {
+      newTask = null;
+    }
+
+    return of(newTask);
   }
 }

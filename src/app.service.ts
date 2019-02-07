@@ -1,9 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { IMessageObject } from "./shared/models/domain/message-object.model";
 import { PtUserWithAuth } from "./shared/models";
-import { PtItem, PtUser, PtComment } from "./shared/models/domain";
+import { PtItem, PtUser, PtComment, PtTask } from "./shared/models/domain";
 import * as mockgen from "./data/mock-data-generator";
 import { DtoTask } from "./shared/models/domain/dto-task.model";
+import { identity } from "rxjs";
 
 @Injectable()
 export class AppService {
@@ -200,6 +201,28 @@ export class AppService {
       result: taskDto.task,
       found,
     };
+  }
+
+  createTask(newTask: PtTask, itemId: number): any {
+    const foundItem = this.currentPtItems.find(
+      i => i.id === itemId && i.dateDeleted === undefined,
+    );
+
+    newTask.id = this.getNextIntergerId(foundItem.tasks);
+
+    const updatedTasks = [newTask, ...foundItem.tasks];
+    const updatedItem = Object.assign({}, foundItem, { tasks: updatedTasks });
+
+    const updatedItems = this.currentPtItems.map(i => {
+      if (i.id === itemId) {
+        return updatedItem;
+      } else {
+        return i;
+      }
+    });
+    this.currentPtItems = updatedItems;
+
+    return newTask;
   }
 
   private paginateArray(array: [], pageSize: number, pageNumber: number) {
