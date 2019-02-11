@@ -225,6 +225,36 @@ export class AppService {
     return newTask;
   }
 
+  deleteItem(itemId: number): any {
+    const foundItem = this.currentPtItems.find(
+      i => i.id === itemId && i.dateDeleted === undefined,
+    );
+
+    if (foundItem) {
+      const itemToDelete = Object.assign({}, foundItem, {
+        dateDeleted: new Date(),
+      });
+      const updatedItems = this.currentPtItems.map(i => {
+        if (i.id === itemId) {
+          return itemToDelete;
+        } else {
+          return i;
+        }
+      });
+      this.currentPtItems = updatedItems;
+
+      return {
+        id: itemId,
+        result: true,
+      };
+    } else {
+      return {
+        id: itemId,
+        result: false,
+      };
+    }
+  }
+
   private paginateArray(array: [], pageSize: number, pageNumber: number) {
     --pageNumber; // because pages logically start with 1, but technically with 0
     return array.slice(pageNumber * pageSize, (pageNumber + 1) * pageSize);

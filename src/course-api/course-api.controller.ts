@@ -173,4 +173,20 @@ export class CourseApiController {
 
     return of(newTask);
   }
+
+  @Delete("/item/:id")
+  deletItem(@Param("id") id: string): Observable<any> {
+    let itemId: number;
+    if (id) {
+      itemId = parseInt(id, 10);
+    }
+
+    const result: any = this.appService.deleteItem(itemId);
+    if (!result || (result && !result.result)) {
+      throw new HttpException("Item not found", HttpStatus.NOT_FOUND);
+    }
+
+    return of(result);
+  }
+
 }
