@@ -189,4 +189,22 @@ export class CourseApiController {
     return of(result);
   }
 
+  @Put("/item/:id")
+  updateItem(@Body() item: PtItem, @Param("id") id): Observable<any> {
+    let itemId: number;
+    let result: any;
+    if (id) {
+      itemId = parseInt(id, 10);
+    }
+
+    if (item) {
+      result = this.appService.updateItem(item, itemId);
+    }
+
+    if (!result || (result && !result.found)) {
+      throw new HttpException("Item not found", HttpStatus.NOT_FOUND);
+    }
+
+    return of(result.updatedItem);
+  }
 }

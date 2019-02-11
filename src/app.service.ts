@@ -255,6 +255,32 @@ export class AppService {
     }
   }
 
+  updateItem(modifiedItem: PtItem, itemId: number): any {
+    let found = false;
+
+    const foundItem = this.currentPtItems.find(
+      i => i.id === itemId && i.dateDeleted === undefined,
+    );
+
+    if (foundItem) {
+      found = true;
+      const updatedItems = this.currentPtItems.map(i => {
+        if (i.id === itemId) {
+          return modifiedItem;
+        } else {
+          return i;
+        }
+      });
+
+      this.currentPtItems = updatedItems;
+    }
+
+    return {
+      updatedItem: modifiedItem,
+      found,
+    };
+  }
+
   private paginateArray(array: [], pageSize: number, pageNumber: number) {
     --pageNumber; // because pages logically start with 1, but technically with 0
     return array.slice(pageNumber * pageSize, (pageNumber + 1) * pageSize);
